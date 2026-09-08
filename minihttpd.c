@@ -16,8 +16,8 @@
 
 char *build_http_response(const minihttpd_response_t *res, size_t *response_len) {
 	const char *status = res->content ? "200 OK" : "404 Not Found";
-	const char *mime_type = res->content ? res->mime_type : "test/plain";
-	const char *content = res->content ? res->content : "Not Found";
+	const char *mime_type = res->content ? res->mime_type : "text/plain";
+	const char *content = res->content ? res->content : "Not Found\n";
 	size_t content_len = res->content ? res->content_len : strlen(content);
 
 	char header[256];
