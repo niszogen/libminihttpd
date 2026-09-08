@@ -1,0 +1,4 @@
+examples/hello
+*.o
+*.a
+*.so*
