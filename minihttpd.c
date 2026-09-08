@@ -63,7 +63,7 @@ void *handle_request(void *arg) {
 		return NULL;
 	}
 
-	printf("%s\n", url_encoded_name);
+	printf("[INFO] Client connected from: %s\n", url_encoded_name);
 
 	minihttpd_response_t res = server->handler(url_encoded_name, server->user_data);
 	size_t response_len;
@@ -91,13 +91,13 @@ minihttpd_t *minihttpd_init(int port, minihttpd_handler_t handler) {
 	address.sin_port = htons(port);
 
 	if (bind(server->listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-		fprintf(stderr, "Bind failed\n");
+		fprintf(stderr, "[ERR] Bind failed\n");
 		close(server->listen_fd);
 		return NULL;
 	};
 
 	if (listen(server->listen_fd, 10) < 0) {
-		fprintf(stderr, "Listen failed\n");
+		fprintf(stderr, "[ERR] Listen failed\n");
 		close(server->listen_fd);
 		return NULL;
 	}
@@ -109,7 +109,7 @@ void minihttpd_run(minihttpd_t *server) {
 	server->running = 1;
 
 	while (server->running) {
-		printf("Waiting for a connection\n");
+		// printf("[INFO] Waiting for a connection\n");
 		struct sockaddr_in client_addr;
 		socklen_t client_addr_len = sizeof(client_addr);
 		int client_socket = -1;
@@ -117,7 +117,7 @@ void minihttpd_run(minihttpd_t *server) {
 		client_socket = accept(server->listen_fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
 		if (client_socket < 0) {
-			fprintf(stderr, "Accept failed\n");
+			fprintf(stderr, "[ERR] Accept failed\n");
 			if (!server->running)
 				break;
 			continue;
@@ -129,7 +129,6 @@ void minihttpd_run(minihttpd_t *server) {
 
 		pthread_t thread_id;
 		pthread_create(&thread_id, NULL, handle_request, conn);
-		printf("Client connected\n");
 		pthread_detach(thread_id);
 	}
 }
