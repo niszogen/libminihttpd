@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CFLAGS = -Wall -Wextra
 
 all: libminihttpd.a libminihttpd.so.1 examples/hello
 
