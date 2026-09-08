@@ -16,6 +16,7 @@
 
 char *build_http_response(const minihttpd_response_t *res, size_t *response_len) {
 	const char *status = res->content ? "200 OK" : "404 Not Found";
+	const char *mime_type = res->content ? res->mime_type : "test/plain";
 	const char *content = res->content ? res->content : "Not Found";
 	size_t content_len = res->content ? res->content_len : strlen(content);
 
@@ -23,10 +24,10 @@ char *build_http_response(const minihttpd_response_t *res, size_t *response_len)
 
 	int header_len = snprintf(header, sizeof(header),
 							  "HTTP/1.1 %s\r\n"
-							  "Content-Type: text/plain\r\n"
+							  "Content-Type: %s\r\n"
 							  "Content-Length: %zu\r\n" SERVER_STRING
 							  "\r\n",
-							  status, content_len);
+							  status, mime_type, content_len);
 	if (header_len < 0 || header_len >= (int)sizeof(header)) {
 		header_len = sizeof(header) - 1;
 	}
