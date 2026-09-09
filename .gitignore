@@ -1,5 +1,4 @@
-examples/hello
-examples/files
+build/
 *.o
 *.a
 *.so*

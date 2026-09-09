@@ -1,30 +1,48 @@
 CC = gcc
 CFLAGS = -Wall -Wextra --pedantic
+PREFIX ?= /usr/local
+LIBDIR ?= $(PREFIX)/lib
+INSTALL ?= install
+BUILD_DIR ?= build
 
-all: libminihttpd.a libminihttpd.so.1 examples/hello examples/files
+all: $(BUILD_DIR)/libminihttpd.a $(BUILD_DIR)/libminihttpd.so.1 $(BUILD_DIR)/examples/hello $(BUILD_DIR)/examples/files
 
-minihttpd.o: minihttpd.c minihttpd.h
+$(BUILD_DIR)/minihttpd.o: minihttpd.c minihttpd.h
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -fPIC -c minihttpd.c -o $@
 
-libminihttpd.a: minihttpd.o
+$(BUILD_DIR)/libminihttpd.a: $(BUILD_DIR)/minihttpd.o
+	@mkdir -p $(dir $@)
 	ar rcs $@ $^
 
-libminihttpd.so.1: minihttpd.o
+$(BUILD_DIR)/libminihttpd.so.1: $(BUILD_DIR)/minihttpd.o
+	@mkdir -p $(dir $@)
 	$(CC) -shared -o $@ $^
 
-examples/hello: examples/hello.c libminihttpd.a
-	$(CC) $(CFLAGS) $< libminihttpd.a -o $@
+$(BUILD_DIR)/examples/hello: examples/hello.c $(BUILD_DIR)/libminihttpd.a
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $< $(BUILD_DIR)/libminihttpd.a -o $@
 
-examples/files: examples/files.c libminihttpd.a
-	$(CC) $(CFLAGS) $< libminihttpd.a -o $@
+$(BUILD_DIR)/examples/files: examples/files.c $(BUILD_DIR)/libminihttpd.a
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $< $(BUILD_DIR)/libminihttpd.a -o $@
 
-run-hello: examples/hello
-	./examples/hello
+run-hello: $(BUILD_DIR)/examples/hello
+	./$(BUILD_DIR)/examples/hello
 
-run-files: examples/files
-	./examples/files
+run-files: $(BUILD_DIR)/examples/files
+	./$(BUILD_DIR)/examples/files
+
+install: $(BUILD_DIR)/libminihttpd.so.1
+	$(INSTALL) -d $(DESTDIR)$(LIBDIR)
+	$(INSTALL) -m 755 $< $(DESTDIR)$(LIBDIR)/libminihttpd.so.1
+	ln -sf libminihttpd.so.1 $(DESTDIR)$(LIBDIR)/libminihttpd.so
+
+uninstall:
+	rm -f $(DESTDIR)$(LIBDIR)/libminihttpd.so.1 $(DESTDIR)$(LIBDIR)/libminihttpd.so
 
 clean:
-	rm -f *.o *.a *.so examples/*.o examples/hello examples/files
+	rm -rf $(BUILD_DIR)
+	rm -f *.o *.a *.so* examples/*.o examples/hello examples/files
 
-.PHONY: all run clean
+.PHONY: all run-hello run-files clean install uninstall
