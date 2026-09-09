@@ -109,7 +109,6 @@ void minihttpd_run(minihttpd_t *server) {
 	server->running = 1;
 
 	while (server->running) {
-		// printf("[INFO] Waiting for a connection\n");
 		struct sockaddr_in client_addr;
 		socklen_t client_addr_len = sizeof(client_addr);
 		int client_socket = -1;
@@ -117,9 +116,9 @@ void minihttpd_run(minihttpd_t *server) {
 		client_socket = accept(server->listen_fd, (struct sockaddr *)&client_addr, &client_addr_len);
 
 		if (client_socket < 0) {
-			fprintf(stderr, "[ERR] Accept failed\n");
 			if (!server->running)
 				break;
+			fprintf(stderr, "[ERR] Accept failed\n");
 			continue;
 		}
 
