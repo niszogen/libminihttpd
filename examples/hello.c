@@ -9,12 +9,12 @@ static minihttpd_response_t handler(const char *path, void *user_data) {
 
 	if (strcmp(path, "/") == 0) {
 		static const char *body = "Hello from libminihttpd!\n";
-		return (minihttpd_response_t){body, strlen(body), "text/plain"};
+		return (minihttpd_response_t){body, strlen(body), "text/plain", 0};
 	}
 
 	if (strcmp(path, "/hi.json") == 0) {
 		static const char *body = "{\"message\":\"hi :D\"}\n";
-		return (minihttpd_response_t){body, strlen(body), "application/json"};
+		return (minihttpd_response_t){body, strlen(body), "application/json", 0};
 	}
 
 	if (strcmp(path, "/date.json") == 0) {
@@ -30,10 +30,10 @@ static minihttpd_response_t handler(const char *path, void *user_data) {
 				 tm.tm_hour,
 				 tm.tm_min,
 				 tm.tm_sec);
-		return (minihttpd_response_t){body, strlen(body), "application/json"};
+		return (minihttpd_response_t){body, strlen(body), "application/json", 0};
 	}
 
-	return (minihttpd_response_t){NULL, 0, NULL}; // -> 404
+	return (minihttpd_response_t){NULL, 0, NULL, 0}; // -> 404
 }
 
 int main(int argc, char **argv) {

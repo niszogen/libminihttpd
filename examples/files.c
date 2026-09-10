@@ -32,7 +32,7 @@ static minihttpd_response_t handler(const char *path, void *user_data) {
 	(void)user_data;
 
 	if (strstr(path, "..")) {
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 
 	char filepath[256];
@@ -44,24 +44,24 @@ static minihttpd_response_t handler(const char *path, void *user_data) {
 
 	FILE *f = fopen(filepath, "rb");
 	if (!f) {
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 
 	if (fseek(f, 0, SEEK_END) != 0) {
 		fclose(f);
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 	long size = ftell(f);
 	if (size < 0) {
 		fclose(f);
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 	rewind(f);
 
 	char *buffer = malloc((size_t)size);
 	if (!buffer) {
 		fclose(f);
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 
 	size_t read_bytes = fread(buffer, 1, (size_t)size, f);
@@ -69,10 +69,10 @@ static minihttpd_response_t handler(const char *path, void *user_data) {
 
 	if (read_bytes != (size_t)size) {
 		free(buffer);
-		return (minihttpd_response_t){NULL, 0, NULL};
+		return (minihttpd_response_t){NULL, 0, NULL, 0};
 	}
 
-	return (minihttpd_response_t){buffer, (size_t)size, get_mime_type(filepath)};
+	return (minihttpd_response_t){buffer, (size_t)size, get_mime_type(filepath), 1};
 }
 
 int main(int argc, char **argv) {

@@ -11,8 +11,8 @@
 #include <unistd.h>
 
 #define PORT 8080
-#define BUFFER_SIZE 4096
-#define SERVER_STRING "Server: simplehttpd\r\n"
+#define BUFFER_SIZE 8192
+#define SERVER_STRING "Server: libminihttpd\r\n"
 
 char *build_http_response(const minihttpd_response_t *res, size_t *response_len) {
 	const char *status = res->content ? "200 OK" : "404 Not Found";
@@ -74,15 +74,24 @@ void *handle_request(void *arg) {
 		free(response);
 	}
 
+	if (res.owns_content)
+		free((void *)res.content);
+
 	close(client_socket);
 	return NULL;
 }
 
 minihttpd_t *minihttpd_init(int port, minihttpd_handler_t handler) {
 	minihttpd_t *server = malloc(sizeof(minihttpd_t));
+	if (!server)
+		return NULL;
 	struct sockaddr_in address;
 
 	server->listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if (server->listen_fd < 0) {
+		free(server);
+		return NULL;
+	}
 	server->handler = handler;
 	server->running = 0;
 
@@ -93,12 +102,14 @@ minihttpd_t *minihttpd_init(int port, minihttpd_handler_t handler) {
 	if (bind(server->listen_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
 		fprintf(stderr, "[ERR] Bind failed\n");
 		close(server->listen_fd);
+		free(server);
 		return NULL;
 	};
 
 	if (listen(server->listen_fd, 10) < 0) {
 		fprintf(stderr, "[ERR] Listen failed\n");
 		close(server->listen_fd);
+		free(server);
 		return NULL;
 	}
 
@@ -123,6 +134,10 @@ void minihttpd_run(minihttpd_t *server) {
 		}
 
 		conn_ctx_t *conn = malloc(sizeof(conn_ctx_t));
+		if(!conn) {
+			close(client_socket);
+			continue;
+		}
 		conn->client_fd = client_socket;
 		conn->server = server;
 
